@@ -1,0 +1,21 @@
+class Main {
+    int age;
+    string name;
+    int hair;
+    age <- 5;
+    
+    int bark() {
+        if (age < 10) {
+            bool beso;
+            age + 30;
+            return 0;
+        } else {
+            return 1;
+        }
+        fi
+    }
+    
+    int getAge() {
+        return age;
+    }
+}
