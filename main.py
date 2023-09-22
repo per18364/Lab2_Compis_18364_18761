@@ -6,6 +6,7 @@ from antlr4.tree.Trees import Trees
 from antlr4.error.ErrorListener import ErrorListener
 from graphviz import Digraph
 import os
+import pprint
 
 
 def visualize_tree(tree, filename):
@@ -49,6 +50,8 @@ class yaplListener(ParseTreeListener):
 class SymbolTable:
     def __init__(self):
         self.scopes = [{}]
+        self.byte_count = 0
+        self.total_byte_count = 0
 
     def enter_scope(self):
         self.scopes.append({})
@@ -57,7 +60,23 @@ class SymbolTable:
         self.scopes.pop()
 
     def declare(self, symbol, type):
-        self.scopes[-1][symbol] = type
+        self.scopes[-1][symbol] = {'type': type}
+        if type == "int" or type == "string":
+            self.byte_count = 4
+        elif type == "float":
+            self.byte_count = 8
+        elif type == "bool":
+            self.byte_count = 1
+        elif type.startswith("method:"):
+            self.byte_count = 0
+            if type.endswith("int") or type.endswith("string"):
+                self.byte_count = 4
+        else:  # Para el caso de 'class' y cualquier otro tipo no especificado
+            self.byte_count = 0
+
+        self.scopes[-1][symbol]['byte_count'] = self.byte_count
+        self.total_byte_count += self.byte_count
+        self.scopes[0]['Main']['total_byte_count'] = self.total_byte_count
 
     def lookup(self, symbol):
         for scope in reversed(self.scopes):
@@ -147,9 +166,10 @@ def main():
     my_listener = MyListener()
     walker = ParseTreeWalker()
     walker.walk(my_listener, tree)
-    print("\nTabla de Simbolos: \n", my_listener.symbol_table.scopes)
+    data = pprint.pformat(my_listener.symbol_table.scopes)
+    print("\nTabla de Simbolos: \n", data)
 
-    visualize_tree(tree, "arbol_sintactico.pdf")
+    # visualize_tree(tree, "arbol_sintactico.pdf")
 
 
 if __name__ == '__main__':
